@@ -1,6 +1,5 @@
 streamlit==1.36.0
 tensorflow==2.20.0
-keras==3.3.3
 numpy==2.0.2
 pillow==10.4.0
 h5py==3.11.0
