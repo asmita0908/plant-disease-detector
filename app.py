@@ -6,29 +6,45 @@ from PIL import Image
 import requests
 import os
 
-# -------------------------------
-# Download model from HuggingFace
-# -------------------------------
+st.set_page_config(page_title="Plant Disease Detector")
+
 MODEL_URL = "https://huggingface.co/09asmita/plant-disease-model/resolve/main/model.h5"
 MODEL_PATH = "model.h5"
 
+
+# ---------------- DOWNLOAD MODEL SAFELY ----------------
+def download_model():
+
+    # agar corrupt file ho to delete
+    if os.path.exists(MODEL_PATH):
+        size = os.path.getsize(MODEL_PATH)
+        if size < 1000000:   # 1MB se choti = broken
+            os.remove(MODEL_PATH)
+
+    # download only if not present
+    if not os.path.exists(MODEL_PATH):
+
+        st.write("⏳ Downloading AI model first time... please wait (1-3 min)")
+
+        with requests.get(MODEL_URL, stream=True) as r:
+            r.raise_for_status()
+            with open(MODEL_PATH, "wb") as f:
+                for chunk in r.iter_content(chunk_size=8192):
+                    if chunk:
+                        f.write(chunk)
+
+
+# ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_my_model():
-    # agar model already download hai to dubara nahi karega
-    if not os.path.exists(MODEL_PATH):
-        with st.spinner("Downloading AI model... please wait ⏳"):
-            r = requests.get(MODEL_URL)
-            open(MODEL_PATH, "wb").write(r.content)
-
-    model = load_model(MODEL_PATH)
+    download_model()
+    model = load_model(MODEL_PATH, compile=False)
     return model
+
 
 model = load_my_model()
 
-# -------------------------------
-# Class Labels (dataset ke folder names)
-# IMPORTANT: apne dataset ke exact names likhna
-# -------------------------------
+# -------- CLASS NAMES ----------
 CLASS_NAMES = [
     "Pepper__bell___Bacterial_spot",
     "Pepper__bell___healthy",
@@ -47,28 +63,26 @@ CLASS_NAMES = [
     "Tomato_healthy"
 ]
 
-# -------------------------------
-# Streamlit UI
-# -------------------------------
-st.title("🌿 Plant Disease Detector")
-st.write("Upload a leaf image and AI will detect the disease")
+st.title("🌿 Plant Disease Detection System")
+st.write("Upload a leaf image and AI will detect the disease.")
 
-uploaded_file = st.file_uploader("Upload Leaf Image", type=["jpg", "png", "jpeg"])
+uploaded_file = st.file_uploader("Upload Leaf Image", type=["jpg","jpeg","png"])
 
 if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")
-    st.image(image, caption="Uploaded Image", use_column_width=True)
 
-    # preprocessing
-    img = image.resize((224, 224))
-    img_array = np.array(img) / 255.0
+    img = Image.open(uploaded_file).convert("RGB")
+    st.image(img, caption="Uploaded Image", use_column_width=True)
+
+    img = img.resize((224,224))
+    img_array = np.array(img)/255.0
     img_array = np.expand_dims(img_array, axis=0)
 
-    # prediction
     prediction = model.predict(img_array)
-    predicted_class = CLASS_NAMES[np.argmax(prediction)]
-    confidence = np.max(prediction) * 100
+    index = np.argmax(prediction)
 
-    st.success(f"🧠 Prediction: {predicted_class}")
-    st.info(f"📊 Confidence: {confidence:.2f}%")
+    disease_name = CLASS_NAMES[index]
+    confidence = np.max(prediction)*100
+
+    st.success(f"Prediction: {disease_name}")
+    st.info(f"Confidence: {confidence:.2f}%")
 
