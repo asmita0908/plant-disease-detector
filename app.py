@@ -1,15 +1,10 @@
 import streamlit as st
 import numpy as np
+from PIL import Image
 import tensorflow as tf
-from tensorflow.keras.models import load_model
-from PIL import Image
-import requestsimport streamlit as st
-import numpy as np
-from tensorflow.keras.models import load_model
-from PIL import Image
-import json
 import requests
 import os
+
 
 st.set_page_config(page_title="Plant Disease Detector", layout="centered")
 
