@@ -1,7 +1,7 @@
 streamlit
 tensorflow==2.15.0
-numpy
+numpy==1.26.4
 pillow
 gdown
-scipy
 h5py
+scipy
