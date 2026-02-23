@@ -1,72 +1,80 @@
-import os
 import numpy as np
+import tensorflow as tf
 import matplotlib.pyplot as plt
-from sklearn.metrics import classification_report, confusion_matrix, roc_curve, auc
-from sklearn.preprocessing import label_binarize
-from tensorflow.keras.models import load_model
+import json
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-# --------- PATHS ----------
-MODEL_PATH = "plant_disease_model.keras"
-TEST_DIR = "dataset/test"   # <-- yaha tumhara test folder hona chahiye
+# Load model
+model = tf.keras.models.load_model("plant_disease_model.keras")
 
-IMG_SIZE = (224, 224)
-BATCH_SIZE = 32
+# Load class labels
+with open("class_indices.json", "r") as f:
+    class_indices = json.load(f)
 
-# --------- LOAD MODEL ----------
-print("Loading model...")
-model = load_model(MODEL_PATH)
+# Reverse dictionary
+labels = dict((v, k) for k, v in class_indices.items())
 
-# --------- LOAD TEST DATA ----------
+# Test data generator
 test_datagen = ImageDataGenerator(rescale=1./255)
 
 test_generator = test_datagen.flow_from_directory(
-    TEST_DIR,
-    target_size=IMG_SIZE,
-    batch_size=BATCH_SIZE,
-    class_mode='categorical',
+    "dataset/validation",
+    target_size=(224, 224),
+    batch_size=32,
+    class_mode="categorical",
     shuffle=False
 )
 
-# --------- PREDICTIONS ----------
-print("Predicting...")
-predictions = model.predict(test_generator)
-
-y_pred = np.argmax(predictions, axis=1)
+# Predictions
+pred_probs = model.predict(test_generator)
+y_pred = np.argmax(pred_probs, axis=1)
 y_true = test_generator.classes
-class_labels = list(test_generator.class_indices.keys())
 
-# --------- CLASSIFICATION REPORT ----------
-print("\nClassification Report:\n")
-print(classification_report(y_true, y_pred, target_names=class_labels))
+# ---------------- F1 SCORE ----------------
+num_classes = len(labels)
+f1_scores = []
 
-# --------- CONFUSION MATRIX ----------
-cm = confusion_matrix(y_true, y_pred)
-print("\nConfusion Matrix:\n", cm)
+for i in range(num_classes):
+    tp = np.sum((y_true == i) & (y_pred == i))
+    fp = np.sum((y_true != i) & (y_pred == i))
+    fn = np.sum((y_true == i) & (y_pred != i))
 
-# --------- ROC AUC ----------
-# Convert labels to one-hot
-y_true_bin = label_binarize(y_true, classes=range(len(class_labels)))
+    precision = tp / (tp + fp + 1e-7)
+    recall = tp / (tp + fn + 1e-7)
 
-fpr = dict()
-tpr = dict()
-roc_auc = dict()
+    f1 = 2 * (precision * recall) / (precision + recall + 1e-7)
+    f1_scores.append(f1)
 
-for i in range(len(class_labels)):
-    fpr[i], tpr[i], _ = roc_curve(y_true_bin[:, i], predictions[:, i])
-    roc_auc[i] = auc(fpr[i], tpr[i])
+print("Average F1 Score:", np.mean(f1_scores))
 
-# --------- PLOT ROC CURVE ----------
-plt.figure(figsize=(8,6))
-for i in range(len(class_labels)):
-    plt.plot(fpr[i], tpr[i], label=f"{class_labels[i]} (AUC = {roc_auc[i]:.2f})")
+# ---------------- ROC & AUC ----------------
+y_true_onehot = tf.keras.utils.to_categorical(y_true, num_classes)
 
-plt.plot([0,1], [0,1], 'k--')
+plt.figure()
+
+for i in range(num_classes):
+    tpr = []
+    fpr = []
+
+    thresholds = np.linspace(0, 1, 50)
+
+    for thresh in thresholds:
+        pred_class = pred_probs[:, i] >= thresh
+
+        tp = np.sum((y_true == i) & (pred_class))
+        fp = np.sum((y_true != i) & (pred_class))
+        fn = np.sum((y_true == i) & (~pred_class))
+        tn = np.sum((y_true != i) & (~pred_class))
+
+        tpr.append(tp / (tp + fn + 1e-7))
+        fpr.append(fp / (fp + tn + 1e-7))
+
+    plt.plot(fpr, tpr)
+
 plt.xlabel("False Positive Rate")
 plt.ylabel("True Positive Rate")
 plt.title("ROC Curve")
-plt.legend()
 plt.savefig("roc_curve.png")
 plt.show()
 
-print("\nROC curve saved as roc_curve.png")
+print("ROC curve saved as roc_curve.png")
