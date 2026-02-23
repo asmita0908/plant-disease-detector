@@ -18,7 +18,7 @@ if not os.path.exists(MODEL_PATH):
 # ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_model():
-    return tf.keras.models.load_model(MODEL_PATH)
+    return tf.keras.models.load_model(plant_disease_model.keras)
 
 model = load_model()
 
