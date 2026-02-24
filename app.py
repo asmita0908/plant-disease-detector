@@ -8,20 +8,20 @@ import gdown
 
 st.set_page_config(page_title="Plant Disease Detection", layout="centered")
 
-# ---------------- GOOGLE DRIVE MODEL ----------------
+# -------- GOOGLE DRIVE MODEL ----------
 
 MODEL_ID = "1Lu752xt99Nbi5Lsh09hIg9nSJ0m-wREo"
 MODEL_PATH = "plant_disease_model.h5"
 
 def download_model():
-  	if not os.path.exists(MODEL_PATH):
+if not os.path.exists(MODEL_PATH):
 with st.spinner("Downloading AI model... first time only (2-3 minutes)"):
 url = f"https://drive.google.com/uc?id={MODEL_ID}"
 gdown.download(url, MODEL_PATH, quiet=False)
 
 download_model()
 
-# ---------------- LOAD MODEL ----------------
+# -------- LOAD MODEL ----------
 
 @st.cache_resource
 def load_model():
@@ -30,14 +30,14 @@ return model
 
 model = load_model()
 
-# ---------------- LOAD CLASSES ----------------
+# -------- LOAD CLASS LABELS ----------
 
 with open("class_indices.json") as f:
 class_indices = json.load(f)
 
 labels = {v:k for k,v in class_indices.items()}
 
-# ---------------- UI ----------------
+# -------- UI ----------
 
 st.title("🌿 Plant Disease Detection")
 st.write("Upload a leaf image to detect disease")
