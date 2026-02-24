@@ -1,71 +1,57 @@
 from pyexpat import model
-
 import streamlit as st
-import tensorflow as tf
 import numpy as np
 from PIL import Image
+import tensorflow as tf
 import json
-import gdown
-import os
 
-MODEL_PATH = "plant_disease_model.h5"
-FILE_ID = "17ord-IG_5zYhRF5Y2L48G_pLSUJIVsks"
-
-if not os.path.exists(MODEL_PATH):
-    url = f"https://drive.google.com/uc?id={FILE_ID}"
-    gdown.download(url, MODEL_PATH, quiet=False)
-
-# ---------------- LOAD MODEL ----------------
-
-@st.cache_resource
-def load_model():
-    model = tf.keras.models.load_model(MODEL_PATH)
-    return model
-
-model = load_model()
-
-# ---------------- LOAD CLASSES ----------------
-
-with open("class_indices.json") as f:
-    class_indices = json.load(f)
-
-labels = {v: k for k, v in class_indices.items()}
-
-# ---------------- UI ----------------
-
+# ---------------- PAGE ----------------
+st.set_page_config(page_title="Plant Disease Detection", layout="centered")
 st.title("🌿 Plant Disease Detection")
 st.write("Upload a leaf image to detect disease")
 
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
+# ---------------- LOAD MODEL ----------------
+@st.cache_resource
+def load_my_model():
+    model = tf.keras.models.load_model("plant_disease_model.h5")
+    return model
 
-# -------- IMAGE PREPROCESS --------
+model = load_my_model()
 
-def preprocess_image(image):
-    image = image.resize((224, 224))
-    img = np.array(image, dtype=np.float32)
+# ---------------- LOAD CLASSES ----------------
+with open("class_indices.json", "r") as f:
+    class_indices = json.load(f)
+
+# reverse mapping (number → class name)
+idx_to_class = {v: k for k, v in class_indices.items()}
+
+# ---------------- IMAGE PREPROCESS ----------------
+def preprocess_image(img):
+    img = img.resize((224, 224))        # IMPORTANT (same as training)
+    img = np.array(img)
     img = img / 255.0
     img = np.expand_dims(img, axis=0)
     return img
 
-# -------- PREDICTION --------
+# ---------------- UPLOAD ----------------
+uploaded_file = st.file_uploader("Choose a leaf image", type=["jpg", "jpeg", "png"])
 
+# ---------------- ONLY RUN AFTER UPLOAD ----------------
 if uploaded_file is not None:
-    image = Image.open(uploaded_file)
+
+    # open image
+    image = Image.open(uploaded_file).convert("RGB")
+
+    # show image
     st.image(image, caption="Uploaded Image", use_column_width=True)
 
+    # preprocess
+    img = preprocess_image(image)
 
-img = preprocess_image(image)
-prediction = model.predict(img)
-class_id = np.argmax(prediction)
-confidence = np.max(prediction)
+    # prediction
+    prediction = model.predict(img)
+    predicted_class = np.argmax(prediction)
 
-predicted_label = labels[int(class_id)]
+    result = idx_to_class[predicted_class]
 
-st.subheader("Prediction:")
-st.success(predicted_label.replace("_", " "))
-
-st.subheader("Confidence:")
-st.write(f"{confidence*100:.2f}%")
-
-
-
+    st.success(f"🧪 Prediction: {result}")
