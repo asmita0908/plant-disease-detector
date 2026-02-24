@@ -18,7 +18,7 @@ MODEL_PATH = "plant_disease_model.h5"
 def download_model():
     if not os.path.exists(MODEL_PATH):
         with st.spinner("Downloading AI model... first run only (2-3 minutes)"):
-            url = f"https://drive.google.com/uc?id={MODEL_ID}"
+           url = f"https://drive.google.com/uc?export=download&id={MODEL_ID}"
 gdown.download(url, MODEL_PATH, quiet=False)
 
 download_model()
@@ -69,4 +69,5 @@ confidence = np.max(prediction)
 
 st.success(f"Disease: {labels[class_id]}")
 st.write(f"Confidence: {confidence*100:.2f}%")
+
 
