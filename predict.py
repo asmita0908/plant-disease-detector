@@ -4,7 +4,7 @@ from tensorflow.keras.preprocessing import image
 import json
 
 # load model
-model = load_model("plant_disease_model.keras")
+model = load_model("plant_disease_model.h5")
 
 # load class labels
 with open("class_indices.json") as f:
