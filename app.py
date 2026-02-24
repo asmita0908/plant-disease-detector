@@ -50,8 +50,8 @@ def preprocess_image(image):
 # -------- PREDICTION --------
 
 if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")
-st.image(image, caption="Uploaded Image", use_column_width=True)
+    image = Image.open(uploaded_file)
+    st.image(image, caption="Uploaded Image", use_column_width=True)
 
 
 img = preprocess_image(image)
@@ -66,5 +66,6 @@ st.success(predicted_label.replace("_", " "))
 
 st.subheader("Confidence:")
 st.write(f"{confidence*100:.2f}%")
+
 
 
