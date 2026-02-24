@@ -4,6 +4,17 @@ import numpy as np
 from PIL import Image
 import tensorflow as tf
 import json
+import os
+import gdown
+
+MODEL_PATH = "plant_disease_model.h5"
+# direct download link (important)
+url = "https://drive.google.com/uc?id=17ord-IG_5zYhRF5Y2L48G_pLSUJIVsks"
+
+# download only if not exists
+if not os.path.exists(MODEL_PATH):
+    with st.spinner("Downloading AI model... (first time only, 2-3 min)"):
+        gdown.download(url, MODEL_PATH, quiet=False)
 
 # ---------------- PAGE ----------------
 st.set_page_config(page_title="Plant Disease Detection", layout="centered")
@@ -55,3 +66,4 @@ if uploaded_file is not None:
     result = idx_to_class[predicted_class]
 
     st.success(f"🧪 Prediction: {result}")
+
