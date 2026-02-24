@@ -5,18 +5,15 @@ import tensorflow as tf
 import numpy as np
 from PIL import Image
 import json
-import os
 import gdown
+import os
 
-# ---------------- DOWNLOAD MODEL ----------------
-
-FILE_ID = "17ord-IG_5zYhRF5Y2L48G_pLSUJIVsks"
 MODEL_PATH = "plant_disease_model.h5"
+FILE_ID = "17ord-IG_5zYhRF5Y2L48G_pLSUJIVsks"
 
 if not os.path.exists(MODEL_PATH):
-    with st.spinner("Downloading AI model... first time only ⏳"):
-        url = f"https://drive.google.com/uc?id={FILE_ID}"
-gdown.download(url, MODEL_PATH, quiet=False)
+    url = f"https://drive.google.com/uc?id={FILE_ID}"
+    gdown.download(url, MODEL_PATH, quiet=False)
 
 # ---------------- LOAD MODEL ----------------
 
@@ -69,4 +66,5 @@ st.success(predicted_label.replace("_", " "))
 
 st.subheader("Confidence:")
 st.write(f"{confidence*100:.2f}%")
+
 
