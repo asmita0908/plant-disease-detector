@@ -8,7 +8,7 @@ import gdown
 
 st.set_page_config(page_title="Plant Disease Detection", layout="centered")
 
-# -------- GOOGLE DRIVE MODEL ----------
+# ---------------- MODEL DOWNLOAD ----------------
 
 MODEL_ID = "1Lu752xt99Nbi5Lsh09hIg9nSJ0m-wREo"
 MODEL_PATH = "plant_disease_model.h5"
@@ -21,7 +21,7 @@ gdown.download(url, MODEL_PATH, quiet=False)
 
 download_model()
 
-# -------- LOAD MODEL ----------
+# ---------------- LOAD MODEL ----------------
 
 @st.cache_resource
 def load_model():
@@ -30,23 +30,23 @@ return model
 
 model = load_model()
 
-# -------- LOAD CLASS LABELS ----------
+# ---------------- LOAD CLASS LABELS ----------------
 
 with open("class_indices.json") as f:
 class_indices = json.load(f)
 
-labels = {v:k for k,v in class_indices.items()}
+labels = {v: k for k, v in class_indices.items()}
 
-# -------- UI ----------
+# ---------------- UI ----------------
 
 st.title("🌿 Plant Disease Detection")
 st.write("Upload a leaf image to detect disease")
 
-uploaded_file = st.file_uploader("Choose an image...", type=["jpg","jpeg","png"])
+uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png"])
 
 def preprocess_image(image):
-image = image.resize((224,224))
-image = np.array(image)/255.0
+image = image.resize((224, 224))
+image = np.array(image) / 255.0
 image = np.expand_dims(image, axis=0)
 return image
 
