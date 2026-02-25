@@ -5,7 +5,8 @@ import tensorflow as tf
 import json
 import gdown
 import os
-
+from tensorflow.keras.preprocessing import image as keras_image
+from PIL import Image
 # ---------------- DOWNLOAD MODEL FROM DRIVE ----------------
 
 MODEL_PATH = "plant_disease_model.h5"
@@ -40,10 +41,10 @@ model = load_my_model()
 # ---------------- IMAGE PREPROCESS ----------------
 
 def preprocess_image(img):
-    img = img.resize((224, 224))
-    img = np.array(img)
-    img = img / 255.0
+    img = img.resize((224, 224))   # same size jo training me use kiya
+    img = keras_image.img_to_array(img)
     img = np.expand_dims(img, axis=0)
+    img = img / 255.0
     return img
 
 # ---------------- UPLOAD ----------------
@@ -65,4 +66,5 @@ result = idx_to_class[predicted_class]
 result = result.replace("___", " - ").replace("_", " ")
 
 st.success(f"🧪 Prediction: {result}")
+
 
