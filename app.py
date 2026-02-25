@@ -43,10 +43,10 @@ model = load_my_model()
 def preprocess_image(img):
 
     img = img.resize((224,224))
-    
-    img = image.img_to_array(img)   # <-- VERY IMPORTANT
-    img = img.astype("float32")     # <-- MAIN FIX
-    img /= 255.0
+
+    img = keras_image.img_to_array(img)
+    img = img.astype("float32")
+    img = img / 255.0
 
     img = np.expand_dims(img, axis=0)
 
@@ -71,6 +71,7 @@ if uploaded_file is not None:
     result = result.replace("___", " - ").replace("_", " ")
 
     st.success(f"🧪 Prediction: {result}")
+
 
 
 
