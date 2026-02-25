@@ -24,7 +24,7 @@ st.write("Upload a leaf image to detect disease")
 # ---------------- LOAD MODEL ----------------
 @st.cache_resource
 def load_my_model():
-    model = tf.keras.models.load_model("plant_disease_model.h5")
+    model = tf.keras.models.load_model("plant_disease_model.h5", compile=False)
     return model
 
 model = load_my_model()
@@ -66,4 +66,5 @@ if uploaded_file is not None:
     result = idx_to_class[predicted_class]
 
     st.success(f"🧪 Prediction: {result}")
+
 
