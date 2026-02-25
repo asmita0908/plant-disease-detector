@@ -49,22 +49,21 @@ def preprocess_image(img):
 
 # ---------------- UPLOAD ----------------
 
-uploaded_file = st.file_uploader("Choose a leaf image", type=["jpg", "jpeg", "png"])
+uploaded_file = st.file_uploader("Choose a leaf image", type=["jpg","png","jpeg"])
 
 if uploaded_file is not None:
-    image = Image.open(uploaded_file).convert("RGB")
+    image = Image.open(uploaded_file)
     st.image(image, caption="Uploaded Image", use_column_width=True)
 
+    img = preprocess_image(image)
 
-img = preprocess_image(image)
+    prediction = model.predict(img)
+    class_index = np.argmax(prediction)
 
-# prediction
-prediction = model.predict(img)
-predicted_class = np.argmax(prediction)
+    result = class_names[class_index]
+    result = result.replace("___", " - ").replace("_", " ")
 
-result = idx_to_class[predicted_class]
-result = result.replace("___", " - ").replace("_", " ")
+    st.success(f"Prediction: {result}")
 
-st.success(f"🧪 Prediction: {result}")
 
 
