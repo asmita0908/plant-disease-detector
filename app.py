@@ -60,10 +60,13 @@ if uploaded_file is not None:
     prediction = model.predict(img)
     class_index = np.argmax(prediction)
 
-    result = class_names[class_index]
+    result = idx_to_class[class_index]
+
+# format name
     result = result.replace("___", " - ").replace("_", " ")
 
-    st.success(f"Prediction: {result}")
+    st.success(f"🧪 Prediction: {result}")
+
 
 
 
