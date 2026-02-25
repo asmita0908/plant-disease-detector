@@ -60,11 +60,14 @@ if uploaded_file is not None:
     img = preprocess_image(image)
 
     # prediction
-    prediction = model.predict(img)
-    predicted_class = np.argmax(prediction)
+   prediction = model.predict(img)
+predicted_class = np.argmax(prediction)
 
-    result = idx_to_class[predicted_class]
+result = idx_to_class[predicted_class]
 
-    st.success(f"🧪 Prediction: {result}")
+# 👇 YAHAN ADD KARNA HAI
+result = result.replace("___", " - ").replace("_", " ")
+
+st.success(f"🧪 Prediction: {result}")
 
 
